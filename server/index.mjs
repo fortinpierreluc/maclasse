@@ -7,8 +7,10 @@ import { makeCode, normalizeCode, sanitizeClassroom } from './sanitize.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
-const dbPath = path.join(root, 'data', 'nid.db');
+const dataDir = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(root, 'data');
+const dbPath = path.join(dataDir, 'nid.db');
 const port = Number(process.env.PORT) || 8787;
+const host = process.env.HOST || '0.0.0.0';
 
 const store = await openStore(dbPath);
 const app = express();
@@ -104,7 +106,7 @@ if (fs.existsSync(dist)) {
   });
 }
 
-app.listen(port, '127.0.0.1', () => {
+app.listen(port, host, () => {
   const base = store.driver === 'sqlite' ? 'SQLite' : 'fichier JSON';
-  console.log(`Ma Classe · base ${base} · http://127.0.0.1:${port}`);
+  console.log(`Ma Classe · base ${base} · http://${host}:${port}`);
 });
