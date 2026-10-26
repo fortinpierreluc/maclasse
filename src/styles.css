@@ -931,6 +931,34 @@ button { cursor: pointer; }
 .rel.is-avoid { background: var(--avoid-soft); border-color: #f0b2a8; }
 .modal-foot { align-items: end; }
 
+.autoplace-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  color: var(--sage-deep);
+  font-weight: 560;
+}
+.autoplace-btn svg { width: 18px; height: 18px; flex: none; }
+.autoplace-btn:hover { background: var(--friend-soft); border-color: #b7d7be; }
+
+.placement-modal { width: min(560px, 100%); }
+.placement-modal h2 { font-size: 1.6rem; }
+.placement-lead { margin: 0; color: var(--muted); }
+.placement-issues { margin: 0; padding-left: 22px; display: grid; gap: 14px; }
+.placement-issues > li::marker { color: var(--avoid); font-weight: 600; }
+.placement-issues > li > strong { display: block; }
+.placement-issues p { margin: 4px 0 0; color: var(--muted); }
+.placement-pairs { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.placement-pairs li {
+  background: var(--avoid-soft);
+  border: 1px solid #f0c3bd;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.9rem;
+}
+
 .ghost {
   position: fixed;
   z-index: 40;

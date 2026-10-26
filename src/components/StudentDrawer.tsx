@@ -19,6 +19,7 @@ export function StudentDrawer({
   onCreate,
   onDrag,
   onFocus,
+  onAutoPlace,
 }: {
   classroom: Classroom;
   links: PairLink[];
@@ -28,6 +29,7 @@ export function StudentDrawer({
   onCreate: () => void;
   onDrag: (id: string, event: PointerEvent<HTMLElement>) => void;
   onFocus: (key: string | null) => void;
+  onAutoPlace: () => void;
 }) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<'tous' | 'placer' | 'assis'>('tous');
@@ -63,6 +65,21 @@ export function StudentDrawer({
           Ajouter
         </button>
       </div>
+
+      {classroom.students.length > 0 ? (
+        <button
+          type="button"
+          className="btn btn-ghost autoplace-btn"
+          onClick={onAutoPlace}
+          title="Placer tous les élèves sans conflit proche, en rapprochant les amis"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4L12 3z" fill="currentColor" />
+            <path d="M18.5 15l.8 2 2 .8-2 .7-.8 2-.7-2-2-.7 2-.8.7-2z" fill="currentColor" />
+          </svg>
+          Placer les élèves
+        </button>
+      ) : null}
 
       <section className="watch" aria-label="Contraintes de placement">
         {closeAvoids.length > 0 ? (

@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { ApiError, createClass, deleteClass, saveClass } from '../api';
 import { ROW_GAP, applyGroupMove, clampFurniture, ensureRoomFixtures, facingLabel, furnitureSize, groupGhostParts, groupShift, labelWorld, newId, rowMates, seatLocals, seatWorld, snap } from '../geometry';
+import { autoPlace } from '../autoplace';
+import type { PlacementIssue } from '../autoplace';
+import { PlacementDialog } from './PlacementDialog';
 import { majorityGrade, mirrorRelations, moveStudent, nextNumber, pairLinks, removeStudent } from '../relations';
 import type { Classroom, Furniture, FurnitureKind, Student, Tool } from '../types';
 import { FURNITURE_LABEL, ROOM_H, ROOM_W } from '../types';
@@ -86,6 +89,7 @@ export function Editor({
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [placementIssues, setPlacementIssues] = useState<PlacementIssue[] | null>(null);
 
   const classroomRef = useRef(classroom);
   classroomRef.current = classroom;
@@ -101,7 +105,7 @@ export function Editor({
   const lastSaved = useRef(initial.updatedAt);
   const snapshotRef = useRef<Classroom | null>(null);
   const dialogRef = useRef(false);
-  dialogRef.current = editing !== null;
+  dialogRef.current = editing !== null || placementIssues !== null;
   const menuRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const toastTimer = useRef(0);
@@ -152,6 +156,25 @@ export function Editor({
     setFuture([]);
     classroomRef.current = stamped;
     setClassroom(stamped);
+  }
+
+  function placeEveryone() {
+    const current = classroomRef.current;
+    const result = autoPlace(current);
+    if (!result.ok) {
+      setPlacementIssues(result.issues);
+      return;
+    }
+    commitFrom(current, { ...current, placements: result.placements });
+    setFocusKey(null);
+    const count = result.placements.length;
+    const friends =
+      result.friendsTotal === 0
+        ? ''
+        : ` · ${result.friendsClose} amitié${result.friendsClose > 1 ? 's' : ''} sur ${result.friendsTotal} côte à côte`;
+    setToast(`${count} élève${count > 1 ? 's' : ''} placé${count > 1 ? 's' : ''}, aucun conflit${friends}`);
+    window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(null), 3200);
   }
 
   function undo() {
@@ -1051,6 +1074,7 @@ export function Editor({
           onCreate={openNewStudent}
           onDrag={onDragStudent}
           onFocus={setFocusKey}
+          onAutoPlace={placeEveryone}
         />
       </div>
 
@@ -1117,6 +1141,8 @@ export function Editor({
           onDelete={editingIsNew ? undefined : deleteEditing}
         />
       ) : null}
+
+      {placementIssues ? <PlacementDialog issues={placementIssues} onClose={() => setPlacementIssues(null)} /> : null}
 
       {draggedStudent ? (
         <div className="ghost" style={{ left: drag?.x, top: drag?.y }}>
